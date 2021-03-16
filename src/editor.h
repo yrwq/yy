@@ -24,3 +24,4 @@ typedef struct editor_state {
 extern editor_state_t editor;
 
 void render_state();
+void load_file(char * file_path);
