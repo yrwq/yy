@@ -1,10 +1,6 @@
 #include <termios.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <unistd.h>
-#include <ctype.h>
-#include <errno.h>
 
 #include <term/mode.h>
 
