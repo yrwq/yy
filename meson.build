@@ -1,6 +1,7 @@
 project('yy', 'c')
 
 src = [
+  'src/editor/state.c',
   'src/term/mode.c',
   'src/term/input.c',
   'src/main.c'

@@ -3,20 +3,17 @@
 #include <unistd.h>
 
 #include <term/mode.h>
-
-struct termios orig;
+#include <editor/state.h>
 
 /* Setup terminal */
 void term_setup() {
     /* Get current terminal's attributes */
-    tcgetattr(STDIN_FILENO, &orig);
+    if(tcgetattr(STDIN_FILENO, &editor.orig) == -1) {
+        exit(1);
+    }
 
     /* Restore terminal on exit */
     atexit(term_reset);
-
-    struct termios raw_mode;
-
-    raw_mode = orig;
 
     /* Short reference:
      *
@@ -37,28 +34,25 @@ void term_setup() {
      *
     */
 
-    raw_mode.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-    raw_mode.c_oflag &= ~(OPOST);
-    raw_mode.c_cflag |= (CS8);
-    raw_mode.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+    struct termios termios = editor.orig;
 
-    /*
-     *
-     * Sets read() function not to pause,
-    untill there is user input,
-    instead it waits for a counple of milliseconds
-    and then the loop proceeds
-    *
-    */
+    termios.c_iflag &= ~(IXON | ICRNL | ISTRIP | INPCK | BRKINT);
+    termios.c_oflag &= ~(OPOST);
+    termios.c_cflag |= CS8;
+    termios.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);
 
-    raw_mode.c_cc[VMIN] = 0;
-    raw_mode.c_cc[VTIME] = 1;
+    /* Make `read` not wait indefinitely for input. */
+    termios.c_cc[VMIN] = 0;
+    termios.c_cc[VTIME] = 1;
 
     /* Set new attributes */
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw_mode);
+    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &termios) == -1) {
+        exit(1);
+    }
 }
 
 /* When program exits, set the previous terminal settings */
 void term_reset() {
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &editor.orig);
+    fflush(stdout);
 }
