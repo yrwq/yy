@@ -22,3 +22,5 @@ typedef struct editor_state {
 } editor_state_t;
 
 extern editor_state_t editor;
+
+void render_state();
