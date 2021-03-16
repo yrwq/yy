@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 #include <term/mode.h>
-#include <editor/state.h>
+#include <editor.h>
 
 /* Setup terminal */
 void term_setup() {
