@@ -10,7 +10,7 @@ editor_state_t editor = {};
 
 void draw_rows() {
     int y;
-    for (y = 0; y < 24; y++) {
+    for (y = 0; y < editor.rows; y++) {
         printf("~\r\n");
     }
     set_cursor(0, 0);
@@ -34,6 +34,7 @@ int get_term_size(int * rows, int * cols) {
 }
 
 void yy_init() {
+    get_term_size(&editor.rows, &editor.cols);
     term_clear();
     set_cursor(0, 0);
     draw_rows();
