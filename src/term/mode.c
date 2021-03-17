@@ -50,8 +50,7 @@ void term_setup() {
     if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &termios) == -1) {
         exit(1);
     }
-
-    editor.running = 1;
+    fflush(stdout);
 }
 
 /* When program exits, set the previous terminal settings */

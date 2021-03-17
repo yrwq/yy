@@ -12,10 +12,15 @@ _make() {
     ninja -C build
 }
 
+_open() {
+    build/yy $1
+}
+
 main() {
     _clean
     _build
     _make
+    _open $1
 }
 
 main "${@}"

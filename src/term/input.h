@@ -7,5 +7,5 @@
 void term_clear();
 void set_cursor(int x, int y);
 
-int read_key(size_t *modifiers_out);
+int read_key();
 void handle_keys();

@@ -13,10 +13,8 @@ int main(int argc, char ** argv) {
         return 1;
     }
 
-    load_file(argv[1]);
-
+    yy_init();
     term_setup();
-    render_state();
 
     while(editor.running) {
         handle_keys();
