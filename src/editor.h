@@ -4,6 +4,8 @@
 
 typedef struct editor_state {
     struct termios orig;
+    int rows;
+    int cols;
     int running;
 } editor_state_t;
 
