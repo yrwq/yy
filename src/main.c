@@ -14,8 +14,11 @@ int main(int argc, char ** argv) {
     }
 
     load_file(argv[1]);
+
     term_setup();
     render_state();
 
-    while(true){ handle_keys(); }
+    while(editor.running) {
+        handle_keys();
+    }
 }
