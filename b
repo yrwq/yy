@@ -12,16 +12,10 @@ _make() {
     ninja -C build
 }
 
-_install() {
-    _target="/usr/local/bin/yy"
-    install -m755 build/yy "${_target}"
-}
-
 main() {
     _clean
     _build
     _make
-    _install
 }
 
 main "${@}"
