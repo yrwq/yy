@@ -11,7 +11,10 @@ editor_state_t editor = {};
 void draw_rows() {
     int y;
     for (y = 0; y < editor.rows; y++) {
-        printf("~\r\n");
+        printf("~");
+        if (y < editor.rows -1) {
+            printf("\r\n");
+        }
     }
     set_cursor(0, 0);
 }
@@ -33,7 +36,7 @@ int get_term_size(int * rows, int * cols) {
     }
 }
 
-int getCursorPosition(int *rows, int *cols) {
+int get_cursor_position(int * rows, int * cols) {
     char buf[32];
     unsigned int i = 0;
     if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
