@@ -15,6 +15,8 @@ void insert_char(char c) {
 }
 
 void yy_init() {
+    term_clear();
+    set_cursor(0, 0);
     editor.running = 1;
 }
 
