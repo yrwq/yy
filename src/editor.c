@@ -163,18 +163,20 @@ void load_file(char * filename) {
 
 /* Fill the contents of 'render' with 'chars' string from 'erow' */
 /* Copy each character from 'chars' to 'render' */
-void update_row(erow * row) {
+void update_row(erow *row) {
     int tabs = 0;
     int j;
     for (j = 0; j < row->size; j++)
         if (row->chars[j] == '\t') tabs++;
+
     free(row->render);
-    row->render = malloc(row->size + tabs*7 + 1);
+    row->render = malloc(row->size + tabs*(TAB_STOP - 1) + 1);
+
     int idx = 0;
     for (j = 0; j < row->size; j++) {
         if (row->chars[j] == '\t') {
             row->render[idx++] = ' ';
-            while (idx % 8 != 0) row->render[idx++] = ' ';
+            while (idx % TAB_STOP != 0) row->render[idx++] = ' ';
         } else {
             row->render[idx++] = row->chars[j];
         }
@@ -182,6 +184,7 @@ void update_row(erow * row) {
     row->render[idx] = '\0';
     row->rsize = idx;
 }
+
 
 /* Append a row */
 void append_row(char *s, size_t len) {

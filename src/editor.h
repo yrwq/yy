@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define TAB_STOP 4
+
 typedef struct erow {
     int size;
     int rsize;
