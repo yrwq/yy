@@ -21,26 +21,34 @@ void move_cursor(char key) {
     erow * row = (editor.cy >= editor.numrows) ? NULL : &editor.row[editor.cy];
 
     switch (key) {
-        case 'h':
+
+        case 'h': {
             if (editor.cx != 0) {
                 editor.cx--;
             }
             break;
-        case 'l':
+        }
+
+        case 'l': {
             if (row && editor.cx < row->size) {
                 editor.cx++;
             }
             break;
-        case 'k':
+        }
+
+        case 'k': {
             if (editor.cy != 0) {
                 editor.cy--;
             }
             break;
-        case 'j':
+        }
+
+        case 'j': {
             if (editor.cy < editor.numrows - 1) {
                 editor.cy++;
             }
             break;
+            }
     }
 
     row = (editor.cy >= editor.numrows) ? NULL : &editor.row[editor.cy];
@@ -81,7 +89,6 @@ void handle_insert_keys() {
 
         default:
             insert_char(key);
-            break;
 
     }
 
@@ -114,6 +121,20 @@ void handle_normal_keys() {
 
         case 'l': {
             move_cursor('l');
+            break;
+        }
+
+        case 'A': {
+            if(editor.cy < editor.numrows) {
+                editor.cx = editor.row[editor.cy].size;
+                editor.mode = 1;
+            }
+            break;
+        }
+
+        case 'I': {
+            editor.cx = 0;
+            editor.mode = 1;
             break;
         }
 

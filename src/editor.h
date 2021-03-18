@@ -25,6 +25,9 @@ typedef struct editor_state {
     int running;
     int mode;
     int numrows;
+    char * filename;
+    char message[80];
+
     erow * row;
 } editor_state_t;
 
@@ -50,3 +53,6 @@ void scrolloff();
 void detect_mode();
 void update_row(erow * row);
 int row_cx_to_rx(erow * row, int cx);
+void draw_bar(struct abuf * ab);
+void set_bar_msg(const char * fmt, ...);
+void insert_row(erow * row, int at, int c);

@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
+#include <stdarg.h>
 
 #include <term/input.h>
 #include <term/mode.h>
@@ -32,15 +33,16 @@ void draw_rows(struct abuf *ab) {
             buf_append(ab, &editor.row[filerow].render[editor.coloff], len);
         }
         buf_append(ab, "\x1b[K", 3);
-        if (y < editor.rows - 1) {
-            buf_append(ab, "\r\n", 2);
-        }
+        buf_append(ab, "\r\n", 2);
     }
 }
 
 /* Insert a character to the buffer */
 void insert_char(char c) {
-    /* TODO */
+    insert_row(&editor.row[editor.cy], editor.cx, c);
+    if(c) {
+        editor.cx++;
+    }
 }
 
 /* Get the terminal's size */
@@ -79,18 +81,17 @@ void scrolloff() {
         editor.rx = row_cx_to_rx(&editor.row[editor.cy], editor.cx);
     }
 
-
     if (editor.cy < editor.rowoff) {
         editor.rowoff = editor.cy;
     }
     if (editor.cy >= editor.rowoff + editor.rows) {
-        editor.rowoff = editor.cy - editor.rows + 1;
+        editor.rowoff = editor.cy - editor.rows;
     }
     if (editor.rx < editor.coloff) {
         editor.coloff = editor.rx;
     }
     if (editor.rx >= editor.coloff + editor.cols) {
-        editor.coloff = editor.rx - editor.cols + 1;
+        editor.coloff = editor.rx - editor.cols;
     }
 }
 
@@ -109,6 +110,9 @@ void yy_init() {
     editor.coloff = 0;
     editor.row = NULL;
     editor.mode = 0;
+    editor.rows -= 1;
+    editor.filename = NULL;
+    editor.message[0] = '\0';
 }
 
 /* Refresh the editor */
@@ -121,18 +125,23 @@ void yy_refresh() {
     /* Handle different input modes, like in vim */
     if (editor.mode == 1){
         handle_insert_keys();
+        set_bar_msg("Insert");
     } else {
         handle_normal_keys();
+        set_bar_msg("Normal");
     }
 
-    /* Set the cursor to 0,0 */
+    /* Clear everything */
     buf_append(&ab, "\x1b[H", 3);
 
     draw_rows(&ab);
+    draw_bar(&ab);
 
     char buf[32];
+
     snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (editor.cy - editor.rowoff) + 1,
                                               (editor.rx - editor.coloff) + 1);
+
     buf_append(&ab, buf, strlen(buf));
 
     write(STDOUT_FILENO, ab.b, ab.len);
@@ -155,6 +164,9 @@ void yy_quit() {
 
 /* Load a file */
 void load_file(char * filename) {
+    free(editor.filename);
+    editor.filename = strdup(filename);
+
     FILE * fp = fopen(filename, "r");
     char * line = NULL;
     size_t linecap = 0;
@@ -211,6 +223,15 @@ void append_row(char *s, size_t len) {
     editor.numrows++;
 }
 
+void insert_row(erow * row, int at, int c) {
+    if (at < 0 || at > row->size) at = row->size;
+    row->chars = realloc(row->chars, row->size + 2);
+    memmove(&row->chars[at + 1], &row->chars[at], row->size - at + 1);
+    row->size++;
+    row->chars[at] = c;
+    update_row(row);
+}
+
 int row_cx_to_rx(erow * row, int cx) {
     int rx = 0;
     int j;
@@ -220,5 +241,28 @@ int row_cx_to_rx(erow * row, int cx) {
         rx++;
     }
     return rx;
+}
+
+void draw_bar(struct abuf *ab) {
+    buf_append(ab, "\x1b[40m", 5);
+    buf_append(ab, "\x1b[K", 5);
+    char status[120];
+
+    int len = snprintf(status, sizeof(status), "%s  | %.20s | %d / %d l",
+        editor.message, editor.filename ? editor.filename : "*buffer*", editor.cy + 1, editor.numrows);
+    buf_append(ab, status, len);
+
+    while (len < editor.cols) {
+        buf_append(ab, " ", 1);
+        len++;
+    }
+    buf_append(ab, "\x1b[m", 3);
+}
+
+void set_bar_msg(const char * fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(editor.message, sizeof(editor.message), fmt, ap);
+    va_end(ap);
 }
 
