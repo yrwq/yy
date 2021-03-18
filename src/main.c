@@ -14,9 +14,9 @@ int main(int argc, char ** argv) {
     }
 
     yy_init();
-    term_setup();
 
     while(editor.running) {
+        yy_refresh();
         handle_keys();
     }
 }

@@ -55,8 +55,6 @@ void term_setup() {
 
 /* When program exits, set the previous terminal settings */
 void term_reset() {
-    set_cursor(0, 0);
-    term_clear();
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &editor.orig);
     fflush(stdout);
 }

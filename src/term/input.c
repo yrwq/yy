@@ -16,6 +16,31 @@ int read_key() {
     return c;
 }
 
+void move_cursor_normal(char key) {
+    switch (key) {
+        case 'h':
+            if (editor.cx != 0) {
+                editor.cx--;
+            }
+            break;
+        case 'l':
+            if (editor.cx != editor.cols - 1) {
+                editor.cx++;
+            }
+            break;
+        case 'k':
+            if (editor.cy != 0) {
+                editor.cy--;
+            }
+            break;
+        case 'j':
+            if (editor.cy != editor.rows - 1) {
+                editor.cy++;
+            }
+            break;
+    }
+}
+
 /* Handle each key */
 void handle_keys() {
     int key = read_key();
@@ -24,20 +49,13 @@ void handle_keys() {
         case CTRL('q'):
             yy_quit();
             break;
+        case 'h':
+        case 'j':
+        case 'k':
+        case 'l':
+            move_cursor_normal(key);
         default:
             insert_char(key);
     }
 
-}
-
-/* Set the cursor to x,y */
-void set_cursor(int x, int y) {
-    printf("\033[%u;%uH", x + 1, y + 1);
-    fflush(stdout);
-}
-
-/* Clear the terminal */
-void term_clear() {
-    printf("\033[2J");
-    fflush(stdout);
 }
