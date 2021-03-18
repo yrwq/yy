@@ -4,13 +4,21 @@
 #include <string.h>
 #include <stdlib.h>
 
+typedef struct erow {
+    int size;
+    char * chars;
+} erow;
+
 typedef struct editor_state {
     struct termios orig;
     int cx, cy; // Cursor x, y
+    int rowoff;
     int rows;
     int cols;
     int running;
-    int mode;   // 0 = normal, 1 insert
+    int mode;
+    int numrows;
+    erow * row;
 } editor_state_t;
 
 extern editor_state_t editor;
@@ -29,3 +37,5 @@ void yy_refresh();
 void draw_rows(struct abuf * ab);
 void buf_append(struct abuf * ab, const char * s, int len);
 void buf_free(struct abuf * ab);
+void load_file(char * filename);
+void append_row(char * s, size_t len);

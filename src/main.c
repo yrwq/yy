@@ -8,22 +8,18 @@
 
 int main(int argc, char ** argv) {
 
+    yy_init();
+
     if(argc != 2) {
         printf("Usage: yy <file>\n");
         return 1;
+    } else {
+        load_file(argv[1]);
     }
 
-    yy_init();
-
-    while(editor.running) {
+    while(true) {
         yy_refresh();
-        switch(editor.mode) {
-            case 1:
-                handle_insert_keys();
-            case 2:
-                handle_normal_keys();
-            default:
-                handle_normal_keys();
-        }
+        handle_keys();
     }
+
 }

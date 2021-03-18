@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include <term/mode.h>
 #include <editor.h>
@@ -41,38 +42,38 @@ void move_cursor(char key) {
     }
 }
 
-void handle_normal_keys() {
+void handle_keys() {
     int key = read_key();
 
     switch(key) {
-        case 'q':
+        case CTRL('q'): {
             yy_quit();
             break;
-        case 'h':
-        case 'j':
-        case 'k':
-        case 'l':
-            move_cursor(key);
-        case 'i':
-            editor.mode = 1;
+        }
+        case CTRL('h'): {
+            move_cursor('h');
+            break;
+        }
+
+        case CTRL('j'): {
+            move_cursor('j');
+            break;
+        }
+
+        case CTRL('k'): {
+            move_cursor('k');
+            break;
+        }
+
+        case CTRL('l'): {
+            move_cursor('l');
+            break;
+        }
+
         default:
             insert_char(key);
-    }
-}
+            break;
 
-void handle_insert_keys() {
-    int key = read_key();
-
-    switch(key) {
-        case CTRL('h'):
-        case CTRL('j'):
-        case CTRL('k'):
-        case CTRL('l'):
-            move_cursor(key);
-        case CTRL('q'):
-            editor.mode = 1;
-        default:
-            insert_char(key);
     }
 
 }

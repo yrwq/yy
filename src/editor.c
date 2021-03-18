@@ -1,7 +1,12 @@
+#include <ctype.h>
+#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include <term/input.h>
 #include <term/mode.h>
@@ -9,13 +14,33 @@
 
 editor_state_t editor = {};
 
-/* Draw a '~' in the beginning of each line */
-void draw_rows(struct abuf * ab) {
+void draw_rows(struct abuf *ab) {
     int y;
     for (y = 0; y < editor.rows; y++) {
-        buf_append(ab, "~", 1);
-        buf_append(ab, "\033[K", 3);
-        if (y < editor.rows -1) {
+        int filerow = y + editor.rowoff;
+        if (filerow >= editor.numrows) {
+            if (editor.numrows == 0 && y == editor.rows / 3) {
+                char welcome[80];
+                int welcomelen = snprintf(welcome, sizeof(welcome), "YY version 0.1");
+                if (welcomelen > editor.cols) welcomelen = editor.cols;
+                int padding = (editor.cols - welcomelen) / 2;
+                if (padding) {
+                    buf_append(ab, "~", 1);
+                    padding--;
+                }
+                while (padding--) buf_append(ab, " ", 1);
+                buf_append(ab, welcome, welcomelen);
+            } else {
+                buf_append(ab, "~", 1);
+            }
+        } else {
+            int len = editor.row[filerow].size;
+            if (len > editor.cols) len = editor.cols;
+            buf_append(ab, editor.row[filerow].chars, len);
+        }
+
+        buf_append(ab, "\x1b[K", 3);
+        if (y < editor.rows - 1) {
             buf_append(ab, "\r\n", 2);
         }
     }
@@ -39,26 +64,6 @@ int get_term_size(int * rows, int * cols) {
     }
 }
 
-/* Get the cursor's position */
-int get_cursor_position(int * rows, int * cols) {
-    char buf[32];
-    unsigned int i = 0;
-    if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
-
-    while (i < sizeof(buf) - 1) {
-        if (read(STDIN_FILENO, &buf[i], 1) != 1) break;
-        if (buf[i] == 'R') break;
-        i++;
-    }
-
-    buf[i] = '\0';
-    if (buf[0] != '\x1b' || buf[1] != '[') return -1;
-    if (sscanf(&buf[2], "%d;%d", rows, cols) != 2) return -1;
-
-    return 0;
-}
-
-
 void buf_append(struct abuf * ab, const char * s, int len) {
     char *new = realloc(ab->b, ab->len + len);
 
@@ -79,6 +84,9 @@ void yy_init() {
 
     editor.cx = 0;
     editor.cy = 0;
+    editor.numrows = 0;
+    editor.rowoff = 0;
+    editor.row = NULL;
     editor.mode = 0;
 }
 
@@ -108,6 +116,32 @@ void yy_quit() {
     write(STDOUT_FILENO, "\x1b[H", 3);
     term_reset();
     editor.running = 0;
-    /* Close file */
     exit(1);
+}
+
+void load_file(char * filename) {
+    FILE * fp = fopen(filename, "r");
+    char * line = NULL;
+    size_t linecap = 0;
+    ssize_t linelen;
+    while ((linelen = getline(&line, &linecap, fp)) != -1) {
+        while (linelen > 0 && (line[linelen - 1] == '\n' ||
+                            line[linelen - 1] == '\r'))
+        linelen--;
+        append_row(line, linelen);
+    }
+    free(line);
+    fclose(fp);
+}
+
+
+void append_row(char *s, size_t len) {
+    editor.row = realloc(editor.row, sizeof(erow) * (editor.numrows + 1));
+
+    int at = editor.numrows;
+    editor.row[at].size = len;
+    editor.row[at].chars = malloc(len + 1);
+    memcpy(editor.row[at].chars, s, len);
+    editor.row[at].chars[len] = '\0';
+    editor.numrows++;
 }
