@@ -8,6 +8,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <fcntl.h>
 
 #include <term/input.h>
 #include <term/mode.h>
@@ -39,9 +40,11 @@ void draw_rows(struct abuf *ab) {
 
 /* Insert a character to the buffer */
 void insert_char(char c) {
-    insert_row(&editor.row[editor.cy], editor.cx, c);
     if(c) {
+        insert_row(&editor.row[editor.cy], editor.cx, c);
         editor.cx++;
+    } else {
+        return;
     }
 }
 
@@ -181,6 +184,26 @@ void load_file(char * filename) {
     fclose(fp);
 }
 
+/* Save file */
+void save_file() {
+    if (editor.filename == NULL) return;
+    int len;
+    char *buf = row_to_string(&len);
+    int fd = open(editor.filename, O_RDWR | O_CREAT, 0644);
+    if (fd != -1) {
+        if (ftruncate(fd, len) != -1) {
+            if (write(fd, buf, len) == len) {
+                close(fd);
+                free(buf);
+                return;
+            }
+        }
+        close(fd);
+    }
+    free(buf);
+}
+
+
 /* Fill the contents of 'render' with 'chars' string from 'erow' */
 /* Copy each character from 'chars' to 'render' */
 void update_row(erow *row) {
@@ -241,6 +264,26 @@ int row_cx_to_rx(erow * row, int cx) {
         rx++;
     }
     return rx;
+}
+
+char * row_to_string(int * buflen) {
+    int totlen = 0;
+    int j;
+
+    for (j = 0; j < editor.numrows; j++)
+        totlen += editor.row[j].size + 1;
+
+    *buflen = totlen;
+    char * buf = malloc(totlen);
+    char * p = buf;
+
+    for (j = 0; j < editor.numrows; j++) {
+        memcpy(p, editor.row[j].chars, editor.row[j].size);
+        p += editor.row[j].size;
+        *p = '\n';
+        p++;
+    }
+    return buf;
 }
 
 void draw_bar(struct abuf *ab) {

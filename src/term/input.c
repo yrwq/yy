@@ -65,7 +65,6 @@ void handle_insert_keys() {
 
         /* Prevent inserting escape sequences */
         case '\x1b':
-        case '\033':
             break;
 
         /* Enter/Return key */
@@ -116,6 +115,11 @@ void handle_normal_keys() {
 
         case 'q': {
             yy_quit();
+            break;
+        }
+
+        case 'w': {
+            save_file();
             break;
         }
 

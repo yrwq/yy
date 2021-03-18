@@ -56,3 +56,5 @@ int row_cx_to_rx(erow * row, int cx);
 void draw_bar(struct abuf * ab);
 void set_bar_msg(const char * fmt, ...);
 void insert_row(erow * row, int at, int c);
+char * row_to_string(int * buflen);
+void save_file();

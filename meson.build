@@ -8,7 +8,6 @@ src = [
 ]
 
 inc = include_directories('src')
-
 executable(
   'yy',
   src,
