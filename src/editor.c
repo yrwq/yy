@@ -26,10 +26,10 @@ void draw_rows(struct abuf *ab) {
         if (filerow >= editor.numrows) {
                 buf_append(ab, "~", 1);
         } else {
-            int len = editor.row[filerow].size - editor.coloff;
+            int len = editor.row[filerow].rsize - editor.coloff;
             if (len < 0) len = 0;
             if (len > editor.cols) len = editor.cols;
-            buf_append(ab, &editor.row[filerow].chars[editor.coloff], len);
+            buf_append(ab, &editor.row[filerow].render[editor.coloff], len);
         }
         buf_append(ab, "\x1b[K", 3);
         if (y < editor.rows - 1) {
@@ -161,6 +161,20 @@ void load_file(char * filename) {
     fclose(fp);
 }
 
+/* Fill the contents of 'render' with 'chars' string from 'erow' */
+/* Copy each character from 'chars' to 'render' */
+void update_row(erow * row) {
+    free(row->render);
+    row->render = malloc(row->size + 1);
+    int j;
+    int idx = 0;
+    for (j = 0; j < row->size; j++) {
+        row->render[idx++] = row->chars[j];
+    }
+    row->render[idx] = '\0';
+    row->rsize = idx;
+}
+
 /* Append a row */
 void append_row(char *s, size_t len) {
     editor.row = realloc(editor.row, sizeof(erow) * (editor.numrows + 1));
@@ -170,5 +184,10 @@ void append_row(char *s, size_t len) {
     editor.row[at].chars = malloc(len + 1);
     memcpy(editor.row[at].chars, s, len);
     editor.row[at].chars[len] = '\0';
+
+    editor.row[at].rsize = 0;
+    editor.row[at].render = NULL;
+    update_row(&editor.row[at]);
+
     editor.numrows++;
 }

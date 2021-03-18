@@ -44,3 +44,4 @@ void load_file(char * filename);
 void append_row(char * s, size_t len);
 void scrolloff();
 void detect_mode();
+void update_row(erow * row);
