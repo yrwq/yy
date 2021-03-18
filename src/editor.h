@@ -13,6 +13,7 @@ typedef struct editor_state {
     struct termios orig;
     int cx, cy; // Cursor x, y
     int rowoff;
+    int coloff;
     int rows;
     int cols;
     int running;

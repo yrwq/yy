@@ -34,9 +34,14 @@ void draw_rows(struct abuf *ab) {
                 buf_append(ab, "~", 1);
             }
         } else {
-            int len = editor.row[filerow].size;
+            int len = editor.row[filerow].size - editor.coloff;
+            if (len < 0) len = 0;
             if (len > editor.cols) len = editor.cols;
-            buf_append(ab, editor.row[filerow].chars, len);
+            buf_append(ab, &editor.row[filerow].chars[editor.coloff], len);
+
+            /* int len = editor.row[filerow].size; */
+            /* if (len > editor.cols) len = editor.cols; */
+            /* buf_append(ab, editor.row[filerow].chars, len); */
         }
 
         buf_append(ab, "\x1b[K", 3);
@@ -85,7 +90,13 @@ void scrolloff() {
     }
     if (editor.cy >= editor.rowoff + editor.rows) {
         editor.rowoff = editor.cy - editor.rows + 1;
-  }
+    }
+    if (editor.cx < editor.coloff) {
+        editor.coloff = editor.cx;
+    }
+    if (editor.cx >= editor.coloff + editor.cols) {
+        editor.coloff = editor.cx - editor.cols + 1;
+    }
 }
 
 /* Initialize the editor with optional settings */
@@ -98,6 +109,7 @@ void yy_init() {
     editor.cy = 0;
     editor.numrows = 0;
     editor.rowoff = 0;
+    editor.coloff = 0;
     editor.row = NULL;
     editor.mode = 0;
 }
@@ -112,7 +124,10 @@ void yy_refresh() {
     draw_rows(&ab);
 
     char buf[32];
-    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (editor.cy - editor.rowoff) + 1, editor.cx + 1);
+    /* snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (editor.cy - editor.rowoff) + 1, editor.cx + 1); */
+
+    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (editor.cy - editor.rowoff) + 1,
+                                              (editor.cx - editor.coloff) + 1);
     buf_append(&ab, buf, strlen(buf));
 
     buf_append(&ab, "\x1b[?25h", 6);

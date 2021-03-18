@@ -18,6 +18,8 @@ int read_key() {
 }
 
 void move_cursor(char key) {
+    erow * row = (editor.cy >= editor.numrows) ? NULL : &editor.row[editor.cy];
+
     switch (key) {
         case 'h':
             if (editor.cx != 0) {
@@ -25,7 +27,7 @@ void move_cursor(char key) {
             }
             break;
         case 'l':
-            if (editor.cx != editor.cols - 1) {
+            if (row && editor.cx < row->size) {
                 editor.cx++;
             }
             break;
@@ -39,6 +41,12 @@ void move_cursor(char key) {
                 editor.cy++;
             }
             break;
+    }
+
+    row = (editor.cy >= editor.numrows) ? NULL : &editor.row[editor.cy];
+    int rowlen = row ? row->size : 0;
+    if (editor.cx > rowlen) {
+        editor.cx = rowlen;
     }
 }
 
