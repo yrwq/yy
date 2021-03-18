@@ -17,6 +17,13 @@ int main(int argc, char ** argv) {
 
     while(editor.running) {
         yy_refresh();
-        handle_keys();
+        switch(editor.mode) {
+            case 1:
+                handle_insert_keys();
+            case 2:
+                handle_normal_keys();
+            default:
+                handle_normal_keys();
+        }
     }
 }

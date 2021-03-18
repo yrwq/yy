@@ -16,7 +16,7 @@ int read_key() {
     return c;
 }
 
-void move_cursor_normal(char key) {
+void move_cursor(char key) {
     switch (key) {
         case 'h':
             if (editor.cx != 0) {
@@ -41,19 +41,36 @@ void move_cursor_normal(char key) {
     }
 }
 
-/* Handle each key */
-void handle_keys() {
+void handle_normal_keys() {
     int key = read_key();
 
     switch(key) {
-        case CTRL('q'):
+        case 'q':
             yy_quit();
             break;
         case 'h':
         case 'j':
         case 'k':
         case 'l':
-            move_cursor_normal(key);
+            move_cursor(key);
+        case 'i':
+            editor.mode = 1;
+        default:
+            insert_char(key);
+    }
+}
+
+void handle_insert_keys() {
+    int key = read_key();
+
+    switch(key) {
+        case CTRL('h'):
+        case CTRL('j'):
+        case CTRL('k'):
+        case CTRL('l'):
+            move_cursor(key);
+        case CTRL('q'):
+            editor.mode = 1;
         default:
             insert_char(key);
     }

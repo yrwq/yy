@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <termios.h>
 
-#define CTRL_KEY(k) ((k) & 0x1f)
-
 int read_key();
-void handle_keys();
-void move_cursor_normal(char key);
+void handle_normal_keys();
+void handle_insert_keys();
+void move_cursor(char key);

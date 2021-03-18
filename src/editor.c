@@ -73,11 +73,13 @@ void buf_free(struct abuf * ab) {
 }
 
 void yy_init() {
+    editor.running = 1;
     term_setup();
+    get_term_size(&editor.rows, &editor.cols);
+
     editor.cx = 0;
     editor.cy = 0;
-    get_term_size(&editor.rows, &editor.cols);
-    editor.running = 1;
+    editor.mode = 0;
 }
 
 void yy_refresh() {
@@ -98,6 +100,7 @@ void yy_refresh() {
     write(STDOUT_FILENO, ab.b, ab.len);
 
     buf_free(&ab);
+
 }
 
 void yy_quit() {
@@ -108,4 +111,3 @@ void yy_quit() {
     /* Close file */
     exit(1);
 }
-
