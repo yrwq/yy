@@ -63,6 +63,11 @@ void handle_insert_keys() {
 
     switch(key) {
 
+        /* Prevent inserting escape sequences */
+        case '\x1b':
+        case '\033':
+            break;
+
         /* Enter/Return key */
         case '\r':
             /* TODO */
