@@ -73,17 +73,24 @@ void buf_free(struct abuf * ab) {
 /* Check if the cursor has moved outside of the visible */
 /* window, if so adjust the rows */
 void scrolloff() {
+    editor.rx = 0;
+
+    if (editor.cy < editor.numrows) {
+        editor.rx = row_cx_to_rx(&editor.row[editor.cy], editor.cx);
+    }
+
+
     if (editor.cy < editor.rowoff) {
         editor.rowoff = editor.cy;
     }
     if (editor.cy >= editor.rowoff + editor.rows) {
         editor.rowoff = editor.cy - editor.rows + 1;
     }
-    if (editor.cx < editor.coloff) {
-        editor.coloff = editor.cx;
+    if (editor.rx < editor.coloff) {
+        editor.coloff = editor.rx;
     }
-    if (editor.cx >= editor.coloff + editor.cols) {
-        editor.coloff = editor.cx - editor.cols + 1;
+    if (editor.rx >= editor.coloff + editor.cols) {
+        editor.coloff = editor.rx - editor.cols + 1;
     }
 }
 
@@ -96,6 +103,7 @@ void yy_init() {
 
     editor.cx = 0;
     editor.cy = 0;
+    editor.rx = 0;
     editor.numrows = 0;
     editor.rowoff = 0;
     editor.coloff = 0;
@@ -124,7 +132,7 @@ void yy_refresh() {
 
     char buf[32];
     snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (editor.cy - editor.rowoff) + 1,
-                                              (editor.cx - editor.coloff) + 1);
+                                              (editor.rx - editor.coloff) + 1);
     buf_append(&ab, buf, strlen(buf));
 
     write(STDOUT_FILENO, ab.b, ab.len);
@@ -202,3 +210,15 @@ void append_row(char *s, size_t len) {
 
     editor.numrows++;
 }
+
+int row_cx_to_rx(erow * row, int cx) {
+    int rx = 0;
+    int j;
+    for (j = 0; j < cx; j++) {
+        if (row->chars[j] == '\t')
+            rx += (TAB_STOP - 1) - (rx % TAB_STOP);
+        rx++;
+    }
+    return rx;
+}
+

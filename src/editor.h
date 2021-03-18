@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* How much space will a tab take */
 #define TAB_STOP 4
 
 typedef struct erow {
@@ -16,6 +17,7 @@ typedef struct erow {
 typedef struct editor_state {
     struct termios orig;
     int cx, cy; // Cursor x, y
+    int rx;
     int rowoff;
     int coloff;
     int rows;
@@ -47,3 +49,4 @@ void append_row(char * s, size_t len);
 void scrolloff();
 void detect_mode();
 void update_row(erow * row);
+int row_cx_to_rx(erow * row, int cx);
