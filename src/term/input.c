@@ -35,7 +35,7 @@ void move_cursor(char key) {
             }
             break;
         case 'j':
-            if (editor.cy != editor.rows - 1) {
+            if (editor.cy < editor.numrows - 1) {
                 editor.cy++;
             }
             break;

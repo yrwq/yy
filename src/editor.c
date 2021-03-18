@@ -77,6 +77,18 @@ void buf_free(struct abuf * ab) {
     free(ab->b);
 }
 
+/* Check if the cursor has moved outside of the visible */
+/* window, if so adjust the rows */
+void scrolloff() {
+    if (editor.cy < editor.rowoff) {
+        editor.rowoff = editor.cy;
+    }
+    if (editor.cy >= editor.rowoff + editor.rows) {
+        editor.rowoff = editor.cy - editor.rows + 1;
+  }
+}
+
+/* Initialize the editor with optional settings */
 void yy_init() {
     editor.running = 1;
     term_setup();
@@ -91,7 +103,7 @@ void yy_init() {
 }
 
 void yy_refresh() {
-
+    scrolloff();
     struct abuf ab = ABUF_INIT;
 
     buf_append(&ab, "\x1b[?25l", 6);
@@ -100,7 +112,7 @@ void yy_refresh() {
     draw_rows(&ab);
 
     char buf[32];
-    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", editor.cy + 1, editor.cx + 1);
+    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (editor.cy - editor.rowoff) + 1, editor.cx + 1);
     buf_append(&ab, buf, strlen(buf));
 
     buf_append(&ab, "\x1b[?25h", 6);
