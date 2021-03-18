@@ -6,7 +6,9 @@
 
 typedef struct erow {
     int size;
+    int rsize;
     char * chars;
+    char * render;
 } erow;
 
 typedef struct editor_state {

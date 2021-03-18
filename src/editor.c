@@ -12,38 +12,25 @@
 #include <term/mode.h>
 #include <editor.h>
 
+/* Holds the state of the editor, */
+/* See 'editor.h' for options */
 editor_state_t editor = {};
 
+/* Draw file line by line.
+ * After the end of the file,
+ * draw a '~' in the beginning of each line */
 void draw_rows(struct abuf *ab) {
     int y;
     for (y = 0; y < editor.rows; y++) {
         int filerow = y + editor.rowoff;
         if (filerow >= editor.numrows) {
-            if (editor.numrows == 0 && y == editor.rows / 3) {
-                char welcome[80];
-                int welcomelen = snprintf(welcome, sizeof(welcome), "YY version 0.1");
-                if (welcomelen > editor.cols) welcomelen = editor.cols;
-                int padding = (editor.cols - welcomelen) / 2;
-                if (padding) {
-                    buf_append(ab, "~", 1);
-                    padding--;
-                }
-                while (padding--) buf_append(ab, " ", 1);
-                buf_append(ab, welcome, welcomelen);
-            } else {
                 buf_append(ab, "~", 1);
-            }
         } else {
             int len = editor.row[filerow].size - editor.coloff;
             if (len < 0) len = 0;
             if (len > editor.cols) len = editor.cols;
             buf_append(ab, &editor.row[filerow].chars[editor.coloff], len);
-
-            /* int len = editor.row[filerow].size; */
-            /* if (len > editor.cols) len = editor.cols; */
-            /* buf_append(ab, editor.row[filerow].chars, len); */
         }
-
         buf_append(ab, "\x1b[K", 3);
         if (y < editor.rows - 1) {
             buf_append(ab, "\r\n", 2);
@@ -51,10 +38,9 @@ void draw_rows(struct abuf *ab) {
     }
 }
 
-/* Insert a character */
+/* Insert a character to the buffer */
 void insert_char(char c) {
-    printf("%c", c);
-    fflush(stdout);
+    /* TODO */
 }
 
 /* Get the terminal's size */
@@ -69,6 +55,7 @@ int get_term_size(int * rows, int * cols) {
     }
 }
 
+/* Append to the buffer */
 void buf_append(struct abuf * ab, const char * s, int len) {
     char *new = realloc(ab->b, ab->len + len);
 
@@ -78,6 +65,7 @@ void buf_append(struct abuf * ab, const char * s, int len) {
     ab->len += len;
 }
 
+/* Free buffer's memory */
 void buf_free(struct abuf * ab) {
     free(ab->b);
 }
@@ -99,9 +87,10 @@ void scrolloff() {
     }
 }
 
-/* Initialize the editor with optional settings */
+/* Initialize the editor */
 void yy_init() {
     editor.running = 1;
+    /* Initialize termios, see term/mode.c */
     term_setup();
     get_term_size(&editor.rows, &editor.cols);
 
@@ -114,29 +103,29 @@ void yy_init() {
     editor.mode = 0;
 }
 
+/* Refresh the editor */
 void yy_refresh() {
+    /* Proper scrolling */
     scrolloff();
+    /* Initialize an empty buffer */
     struct abuf ab = ABUF_INIT;
 
+    /* Handle different input modes, like in vim */
     if (editor.mode == 1){
         handle_insert_keys();
     } else {
         handle_normal_keys();
     }
 
-    buf_append(&ab, "\x1b[?25l", 6);
+    /* Set the cursor to 0,0 */
     buf_append(&ab, "\x1b[H", 3);
 
     draw_rows(&ab);
 
     char buf[32];
-    /* snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (editor.cy - editor.rowoff) + 1, editor.cx + 1); */
-
     snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (editor.cy - editor.rowoff) + 1,
                                               (editor.cx - editor.coloff) + 1);
     buf_append(&ab, buf, strlen(buf));
-
-    buf_append(&ab, "\x1b[?25h", 6);
 
     write(STDOUT_FILENO, ab.b, ab.len);
 
@@ -144,14 +133,19 @@ void yy_refresh() {
 
 }
 
+/* Quit the editor */
 void yy_quit() {
+    /* Clear the whole terminal */
     write(STDOUT_FILENO, "\x1b[2J", 4);
+    /* Set the cursor to 0,0 */
     write(STDOUT_FILENO, "\x1b[H", 3);
+    /* Reset the state we saved, when initializing termios */
     term_reset();
     editor.running = 0;
     exit(1);
 }
 
+/* Load a file */
 void load_file(char * filename) {
     FILE * fp = fopen(filename, "r");
     char * line = NULL;
@@ -167,7 +161,7 @@ void load_file(char * filename) {
     fclose(fp);
 }
 
-
+/* Append a row */
 void append_row(char *s, size_t len) {
     editor.row = realloc(editor.row, sizeof(erow) * (editor.numrows + 1));
 
