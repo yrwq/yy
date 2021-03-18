@@ -40,3 +40,5 @@ void buf_append(struct abuf * ab, const char * s, int len);
 void buf_free(struct abuf * ab);
 void load_file(char * filename);
 void append_row(char * s, size_t len);
+void scrolloff();
+void detect_mode();

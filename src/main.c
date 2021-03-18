@@ -19,7 +19,6 @@ int main(int argc, char ** argv) {
 
     while(true) {
         yy_refresh();
-        handle_keys();
     }
 
 }

@@ -118,6 +118,12 @@ void yy_refresh() {
     scrolloff();
     struct abuf ab = ABUF_INIT;
 
+    if (editor.mode == 1){
+        handle_insert_keys();
+    } else {
+        handle_normal_keys();
+    }
+
     buf_append(&ab, "\x1b[?25l", 6);
     buf_append(&ab, "\x1b[H", 3);
 

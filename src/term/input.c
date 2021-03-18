@@ -50,14 +50,15 @@ void move_cursor(char key) {
     }
 }
 
-void handle_keys() {
+void handle_insert_keys() {
     int key = read_key();
 
     switch(key) {
-        case CTRL('q'): {
-            yy_quit();
-            break;
+
+        case CTRL('n'): {
+            editor.mode = 0;
         }
+
         case CTRL('h'): {
             move_cursor('h');
             break;
@@ -81,6 +82,44 @@ void handle_keys() {
         default:
             insert_char(key);
             break;
+
+    }
+
+}
+
+void handle_normal_keys() {
+    int key = read_key();
+
+    switch(key) {
+
+        case 'q': {
+            yy_quit();
+            break;
+        }
+
+        case 'h': {
+            move_cursor('h');
+            break;
+        }
+
+        case 'j': {
+            move_cursor('j');
+            break;
+        }
+
+        case 'k': {
+            move_cursor('k');
+            break;
+        }
+
+        case 'l': {
+            move_cursor('l');
+            break;
+        }
+
+        case 'i': {
+            editor.mode = 1;
+        }
 
     }
 
