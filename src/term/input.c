@@ -63,6 +63,16 @@ void handle_insert_keys() {
 
     switch(key) {
 
+        /* Enter/Return key */
+        case '\r':
+            /* TODO */
+            break;
+
+        /* Backspace */
+        case 127:
+            /* TODO */
+            break;
+
         case CTRL('n'): {
             editor.mode = 0;
         }
